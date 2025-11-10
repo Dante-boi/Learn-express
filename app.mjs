@@ -120,3 +120,67 @@ app.delete('/users', (req, res) => {
         message: `${count} användare borttagna`
     })
 })
+
+// PATCH - Delvis uppdatering
+app.patch('/users/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+    const user = users.find(u => u.id === id)
+
+    if (!user) {
+        return res.status(404).json({
+            error: 'Användare hittades inte'
+        })
+    }
+
+    // Uppdatera endastde fält som skickats
+    const updates = req.body
+    
+    // Validera att minst ett fält skickas
+    if (Object.keys(updates).length === 0) {
+        return res.status(400).json({
+            error: 'Ingen data att uppdatera'
+        })
+    }
+
+    // Uppdatera användaren
+    if (updates.name !== undefined) user.name = updates.name
+    if (updates.email !== undefined) {
+        // Kontrollera unik email
+        const emailExists = users.some(u =>
+            u.id !== id && u.email === updates.email
+        )
+        if (emailExists) {
+            return res.status(409).json({
+                error: 'Email används redan'
+            })
+        }
+    }
+
+    res.json(user)
+})
+
+// PUT - Komplett ersättning
+app.put('/users/:id', (req, res) => {
+    const id = parseInt (req.params.id)
+    const userIndex = users.findIndex(u => u.id === id)
+
+    if (userIndex === -1) {
+        return res.status(404).json({
+            error: 'Användaren hittades inte'
+        })
+    }
+
+    const { name, email } = req.body
+    
+    // Validering - alla fält krävs för PUT
+    if (!name || !email ) {
+        return res.status(400).json({
+            error: 'Name och email krävs för PUT'
+        })
+    }
+
+    // Ersätt användaren helt
+    users[userIndex] = { id, name, email }
+
+    res.json(uders[userIndex])
+})
