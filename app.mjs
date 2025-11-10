@@ -81,3 +81,42 @@ app.post('/users', (req, res) => {
     // Returnera skapad användare med status 201
     res.status(201).json(newUser)
 })
+
+// DELETE - Ta bort användare
+app.delete('/users/:id', (req, res) => {
+    const id = parseInt(req.params.id)
+    const userIndex = users.findIndex(u => u.id === id)
+
+    if (userIndex === -1) {
+        return res.status(404).json({
+            error: 'Användare hittades inte'
+        })
+    }
+
+    // Ta bort användaren
+    const deletedUser = users.splice(userIndex, 1)[0]
+
+    res.json({
+        message: 'Användaren borttagen',
+        user: deletedUser
+    })
+})
+
+// DELETE alla användare (farlig operation!)
+app.delete('/users', (req, res) => {
+    // Kräv bekräftelse via query parameter
+    const { confirm } = req.query
+    
+    if (confirm !== 'yes') {
+        return res.status(400).json({
+            error: 'Bekräftelse krävs. Lägg till ?confirm=yes'
+        })
+    }
+
+    const count = users.length
+    users = []
+
+    res.json({
+        message: `${count} användare borttagna`
+    })
+})
