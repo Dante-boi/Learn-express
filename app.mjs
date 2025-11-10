@@ -50,3 +50,34 @@ app.get('/search', (req, res) => {
 
     res.json(filteredUsers)
 })
+
+//POST - Skapa ny användare
+app.post('/users', (req, res) => {
+    const { name, email } = req.body
+
+    // Validering
+    if (!name || !email) {
+        return res.status(400).json({
+            error: 'Name och email krävs'
+        })
+    }
+
+    // Kontrollera om email redan finns
+    if (users.some(u => u.email === email)) {
+        return res.status(409).json({
+            error: 'Email finns redan'
+        })
+    }
+
+    // Skapa ny användare
+    const newUser = {
+        id: users.length + 1,
+        name,
+        email
+    }
+
+    users.push(newUser)
+
+    // Returnera skapad användare med status 201
+    res.status(201).json(newUser)
+})
