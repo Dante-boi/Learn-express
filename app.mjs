@@ -273,3 +273,21 @@ const rateLimitMiddleware = (req, res, next) => {
 }
 
 app.use(rateLimitMiddleware)
+
+import { loadData, saveData } from './storage.mjs'
+
+// Ladda data vid start
+let users = []
+
+const initializeData = async () => {
+    const data = await loadData()
+    users = data.users || []
+    console.log(`Laddade ${users.length} användare från fil`)  
+}
+
+// Anropa detta innan servern startar
+await initializeData()
+
+// Efter varje modifiering, spara data:
+// I POST, DELETE, PATCH, PUT endpoints:
+await saveData({ users })
