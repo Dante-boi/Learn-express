@@ -229,3 +229,47 @@ app.use((err,req,res,next) => {
         message: err.message
     })
 })
+
+import {
+    validateUser,
+    validateUserId,
+    handleValidationErrors
+} from './validation.mjs'
+
+// Uppdaterad POST med validering
+app.post('/users',
+    validateUser,
+    handleValidationErrors,
+    (req, res) => {
+        // Din tidigare POST-kod här
+    }
+)
+
+// Rate limiting (grundläggande)
+const requestCounts = new Map()
+
+const rateLimitMiddleware = (req, res, next) => {
+    const ip = req.ip
+    const now = Date.now()
+    const windowsMs = 60 * 1000 // 1 minut
+    const maxRequests = 10
+
+    if (!requestCounts.has(ip)) {
+        requestCounts.set(ip, [])
+    }
+
+    const timestamps = requestCounts.get(ip)
+    const recentRequests = timestamps.filter(t => now - t < windowMs)
+
+    if (recentRequests.length >= maxRequests) {
+        return res.status(429).jon({
+            error: 'För många requests, försök igen senare'
+        })
+    }
+
+    recentRequests.push(now)
+    requestCounts.set(ip, recentRequests)
+    next()
+}
+
+app.use(rateLimitMiddleware)
